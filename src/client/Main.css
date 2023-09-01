@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --auth-form-brand: theme(colors.primary.500);
+  --auth-form-brand-accent: theme(colors.primary.600);
+  --auth-form-submit-button-text-color: theme(colors.white);
+}
