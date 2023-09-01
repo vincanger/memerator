@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@wasp/queries';
 import createMemeIdea from '@wasp/actions/createMemeIdea';
-import getAllMemeIdeas from '@wasp/queries/getAllMemeIdeas';
+import getAllMemes from '@wasp/queries/getAllMemes';
 import deleteMeme from '@wasp/actions/deleteMeme';
 import {
   AiOutlineEdit,
@@ -17,7 +17,7 @@ export function HomePage() {
   const [audience, setAudience] = useState('');
   const [isMemeGenerating, setIsMemeGenerating] = useState(false);
 
-  const { data: memeIdeas, isLoading, error } = useQuery(getAllMemeIdeas);
+  const { data: memes, isLoading, error } = useQuery(getAllMemes);
 
   const handleGenerateMeme = async () => {
     try {
@@ -99,8 +99,8 @@ export function HomePage() {
       >
         <AiOutlineRobot />{!isMemeGenerating ? 'Generate Meme' : 'Generating...'}
       </button>
-      {!!memeIdeas
-        ? memeIdeas.map((memeIdea) => (
+      {!!memes
+        ? memes.map((memeIdea) => (
             <div key={memeIdea.id} className='mt-4 p-4 bg-gray-100 rounded-lg'>
               <h3 className='font-bold mb-2'>Meme Idea:</h3>
               <img src={memeIdea.url} width='500px' />

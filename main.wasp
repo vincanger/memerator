@@ -41,7 +41,6 @@ entity User {=psl
     username String @unique
     password String
     memes    Meme[]
-    autoIdeas AutoMemeIdea[]
 psl=}
 
 entity Meme {=psl
@@ -53,8 +52,6 @@ entity Meme {=psl
     templateId String
     user       User   @relation(fields: [userId], references: [id])
     userId     Int    
-    autoMemeIdea AutoMemeIdea? @relation(fields: [autoMemeIdeaId], references: [id])
-    autoMemeIdeaId String?
     createdAt  DateTime @default(now())
 psl=}
 
@@ -68,20 +65,9 @@ entity Template {=psl
     memes    Meme[]
 psl=}
 
-entity AutoMemeIdea {=psl
-    id       String    @id @default(uuid())
-    topics   String
-    audience String
-    stopDate DateTime?
-    status   String @default("pending")
-    user     User   @relation(fields: [userId], references: [id])
-    userId   Int
-    memes    Meme[]
-psl=}
-
 action createMemeIdea {
   fn: import { createMemeIdea } from "@server/actions.js",
-  entities: [Meme, Template, User]
+  entities: [Meme, Template]
 }
 
 action editMeme {
@@ -94,18 +80,8 @@ action deleteMeme {
   entities: [Meme]
 }
 
-action createAutoMemeIdea {
-  fn: import { createAutoMemeIdea } from "@server/actions.js",
-  entities: [AutoMemeIdea, User]
-}
-
-action deleteAutoMemeIdea {
-  fn: import { deleteAutoMemeIdea } from "@server/actions.js",
-  entities: [AutoMemeIdea]
-}
-
-query getAllMemeIdeas {
-  fn: import { getAllMemeIdeas } from "@server/queries.js",
+query getAllMemes {
+  fn: import { getAllMemes } from "@server/queries.js",
   entities: [Meme]
 }
 
@@ -114,31 +90,15 @@ query getMeme {
   entities: [Meme]
 }
 
-query getAutoMemeIdeas {
-  fn: import { getAutoMemeIdeas } from "@server/queries.js",
-  entities: [AutoMemeIdea]
-}
-
-query getAutoMemes {
-  fn: import { getAutoMemes } from "@server/queries.js",
-  entities: [AutoMemeIdea]
-}
-
 query getMemeTemplates {
   fn: import { getMemeTemplates } from "@server/queries.js",
   entities: [Template]
 }
 
-route MemeIdeaRoute { path: "/meme-idea/:id", to: MemeIdeaPage }
-page MemeIdeaPage {
-  component: import { MemeIdeaPage } from "@client/pages/MemeIdea.jsx",
+route EditMemeRoute { path: "/meme/:id", to: EditMemePage }
+page EditMemePage {
+  component: import { EditMemePage } from "@client/pages/EditMemePage.jsx",
   authRequired: true
-}
-
-route MemeRoute { path: "/meme/:memeId", to: MemePage }
-page MemePage {
-  component: import { MemePage } from "@client/pages/Meme.jsx",
-  authRequired: false
 }
 
 route HomePageRoute { path: "/", to: HomePage }
@@ -147,38 +107,14 @@ page HomePage {
   authRequired: true
 }
 
-route AutoMemeRoute { path: "/auto-meme", to: AutoMemePage }
-page AutoMemePage {
-  component: import { AutoMemePage } from "@client/pages/AutoMeme.jsx",
-  authRequired: true
-}
-
-route AutoMemeIdeaRoute { path: "/auto-meme/:autoMemeIdeaId", to: AutoMemeIdeaPage }
-page AutoMemeIdeaPage {
-  component: import { AutoMemeIdeaPage } from "@client/pages/AutoMemeIdea.jsx",
-  authRequired: true
-}
-
 job storeMemeTemplates {
   executor: PgBoss,
   perform: {
-    fn: import { getMemeTemplates } from "@server/workers.js",
+    fn: import { fetchAndStoreMemeTemplates } from "@server/workers.js",
   },
   schedule: {
     // daily at 7 a.m.
     cron: "0 7 * * *" 
   },
   entities: [Template],
-}
-
-job generateAutoMemes {
-  executor: PgBoss,
-  perform: {
-    fn: import { runAutoMemes } from "@server/workers.js",
-  },
-  schedule: {
-    // every hour
-    cron: "1 * * * *"  
-  },
-  entities: [Meme, Template, AutoMemeIdea],
 }
