@@ -1,10 +1,11 @@
+import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import useAuth from '@wasp/auth/useAuth';
 import logout from '@wasp/auth/logout';
 import { FaRegLaughBeam } from 'react-icons/fa';
 import "./Main.css";
 
-export const Layout = ({ children }) => {
+export const Layout = ({ children }: { children: ReactNode }) => {
   const { data: user } = useAuth();
 
   return (

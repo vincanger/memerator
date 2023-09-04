@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@wasp/router';
 import { useQuery } from '@wasp/queries';
-import createMemeIdea from '@wasp/actions/createMemeIdea';
+import createMeme from '@wasp/actions/createMeme';
 import getAllMemes from '@wasp/queries/getAllMemes';
 import deleteMeme from '@wasp/actions/deleteMeme';
 import {
@@ -22,7 +22,7 @@ export function HomePage() {
   const handleGenerateMeme = async () => {
     try {
       setIsMemeGenerating(true);
-      await createMemeIdea({ topics, audience });
+      await createMeme({ topics, audience });
     } catch (error: any) {
       alert('Error generating meme: ' + error.message);
     } finally {
@@ -55,6 +55,7 @@ export function HomePage() {
           <input
             key={index}
             type='text'
+            id='topics'
             value={topic}
             onChange={(e) => {
               const updatedTopics = [...topics];
@@ -95,9 +96,12 @@ export function HomePage() {
       </div>
       <button
         onClick={handleGenerateMeme}
-        className={`flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-sm font-bold py-1 px-2 rounded ${isMemeGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} $}`}
+        className={`flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-sm font-bold py-1 px-2 rounded ${
+          isMemeGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+        } $}`}
       >
-        <AiOutlineRobot />{!isMemeGenerating ? 'Generate Meme' : 'Generating...'}
+        <AiOutlineRobot />
+        {!isMemeGenerating ? 'Generate Meme' : 'Generating...'}
       </button>
       {!!memes
         ? memes.map((memeIdea) => (
@@ -105,7 +109,7 @@ export function HomePage() {
               <h3 className='font-bold mb-2'>Meme Idea:</h3>
               <img src={memeIdea.url} width='500px' />
               <div className='flex items-center mt-4'>
-                <Link to={`/meme-idea/${memeIdea.id}`}>
+                <Link key={memeIdea.id} params={{ id: memeIdea.id }} to={`/meme/:id`}>
                   <button className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'>
                     <AiOutlineEdit />
                     Edit Meme

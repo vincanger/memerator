@@ -2,17 +2,17 @@ import HttpError from '@wasp/core/HttpError.js';
 import OpenAI from 'openai';
 import { fetchMemeTemplates, generateMemeImage } from './utils.js';
 
-import type { CreateMemeIdea, EditMeme, DeleteMeme } from '@wasp/actions/types';
+import type { CreateMeme, EditMeme, DeleteMeme } from '@wasp/actions/types';
 import type { Meme, Template } from '@wasp/entities';
 
-type CreateMemeIdeaArgs = { topics: string[]; audience: string };
+type CreateMemeArgs = { topics: string[]; audience: string };
 type EditMemeArgs = Pick<Meme, 'id' | 'text0' | 'text1'>;
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const createMemeIdea: CreateMemeIdea<CreateMemeIdeaArgs, Meme> = async ({ topics, audience }, context) => {
+export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, audience }, context) => {
   if (!context.user) {
     throw new HttpError(401);
   }
@@ -48,7 +48,7 @@ export const createMemeIdea: CreateMemeIdea<CreateMemeIdeaArgs, Meme> = async ({
 
     console.log('random template: ', randomTemplate);
 
-    const sysPrompt = `You are a meme idea generator. You will use the imgflip api to generate a meme based on an idea you suggest. Given a random template name and topics, generate a meme idea for the intended audience. Only use the templates provided`;
+    const sysPrompt = `You are a meme idea generator. You will use the imgflip api to generate a meme based on an idea you suggest. Given a random template name and topics, generate a meme idea for the intended audience. Only use the template provided`;
     const userPrompt = `Topics: ${topicsStr} \n Intended Audience: ${audience} \n Template: ${randomTemplate.name} \n`;
 
     const openAIResponse = await openai.chat.completions.create({
@@ -63,10 +63,6 @@ export const createMemeIdea: CreateMemeIdea<CreateMemeIdeaArgs, Meme> = async ({
           parameters: {
             type: 'object',
             properties: {
-              templateName: {
-                type: 'string',
-                description: 'The name of the meme template on imgflip',
-              },
               text0: { type: 'string', description: 'The text for the top caption of the meme' },
               text1: { type: 'string', description: 'The text for the bottom caption of the meme' },
             },
@@ -93,7 +89,6 @@ export const createMemeIdea: CreateMemeIdea<CreateMemeIdeaArgs, Meme> = async ({
     //     function_call: {
     //       name: 'generateMeme',
     //       arguments: '{\n' +
-    //         '  "templateName": "Trump Bill Signing",\n' +
     //         `  "text0": "CSS you've been writing all day",\n` +
     //         '  "text1": "This looks horrible"\n' +
     //         '}'
@@ -105,22 +100,35 @@ export const createMemeIdea: CreateMemeIdea<CreateMemeIdeaArgs, Meme> = async ({
 
     const gptArgs = JSON.parse(openAIResponse.choices[0].message.function_call.arguments);
     console.log('gptArgs: ', gptArgs);
-    const memeIdeaTemplateName = gptArgs.templateName;
+
     const memeIdeaText0 = gptArgs.text0;
     const memeIdeaText1 = gptArgs.text1;
 
-    console.log('meme Idea args: ', memeIdeaTemplateName, memeIdeaText0, memeIdeaText1);
+    console.log('meme Idea args: ', memeIdeaText0, memeIdeaText1);
 
-    const generatedMeme = await generateMemeImage(
+    const memeUrl = await generateMemeImage(
       {
-        templateName: memeIdeaTemplateName,
+        templateId: randomTemplate.id,
         text0: memeIdeaText0,
         text1: memeIdeaText1,
-      },
-      context
+        topics: topicsStr,
+        audience: audience,
+      }
     );
 
-    return generatedMeme;
+    const newMeme = await context.entities.Meme.create({
+      data: {
+        text0: memeIdeaText0,
+        text1: memeIdeaText1,
+        topics: topicsStr,
+        audience: audience,
+        url: memeUrl,
+        template: { connect: { id: randomTemplate.id } },
+        user: { connect: { id: context.user.id } },
+      },
+    });
+
+    return newMeme;
   } catch (error) {
     console.error(error);
     throw new HttpError(500, 'Error generating meme idea');
@@ -137,34 +145,38 @@ export const editMeme: EditMeme<EditMemeArgs, Meme> = async ({ id, text0, text1 
       where: { id: id, userId: context.user.id },
       include: { template: true },
     });
-  
+
     console.log('meme: ', meme);
-  
+
     if (!meme) {
       throw new HttpError(404, 'No meme with id ' + id);
     }
-  
+
     if (meme.userId !== context.user.id) {
       throw new HttpError(403, 'You are not the creator of this meme');
     }
-  
-    const newMeme = await generateMemeImage(
-      {
-        id: id,
-        templateName: meme.template.name,
+
+    const memeUrl = await generateMemeImage({
+      id: id,
+      templateId: meme.template.id,
+      text0: text0,
+      text1: text1,
+    });
+
+    const newMeme = await context.entities.Meme.update({
+      where: { id: id },
+      data: {
         text0: text0,
         text1: text1,
+        url: memeUrl,
       },
-      context
-    );
-  
+    });
+
     return newMeme;
-    
   } catch (error) {
     console.error(error);
     throw new HttpError(500, 'Error editing meme: ' + id);
   }
-
 };
 
 type DeleteMemeArgs = Pick<Meme, 'id'>;

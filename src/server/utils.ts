@@ -2,10 +2,14 @@ import axios from 'axios';
 import { stringify } from 'querystring';
 import HttpError from '@wasp/core/HttpError.js';
 
-import type { CreateMemeIdea } from '@wasp/actions/types';
-import type { Meme } from '@wasp/entities';
-
-type GenerateMemeArgs = { id?: string; templateName: string; text0: string; text1: string };
+type GenerateMemeArgs = {
+  text0: string;
+  text1: string;
+  topics?: string;
+  id?: string;
+  templateId?: string;
+  audience?: string;
+};
 
 export const fetchMemeTemplates = async () => {
   try {
@@ -17,25 +21,13 @@ export const fetchMemeTemplates = async () => {
   }
 };
 
-export const generateMemeImage: CreateMemeIdea<GenerateMemeArgs, Meme> = async (args, context) => {
-  if (!context.user) {
-    throw new HttpError(401);
-  }
+export const generateMemeImage = async (args: GenerateMemeArgs) => {
+
+  console.log('args: ', args); 
 
   try {
-    console.log('generateMemeImage args: ', args);
-
-    const template = await context.entities.Template.findFirstOrThrow({
-      where: {
-        name: {
-          contains: args.templateName,
-          mode: 'insensitive', // This makes the search case-insensitive
-        },
-      },
-    });
-
     const data = stringify({
-      template_id: template.id,
+      template_id: args.templateId,
       username: process.env.IMGFLIP_USERNAME,
       password: process.env.IMGFLIP_PASSWORD,
       text0: args.text0,
@@ -53,33 +45,7 @@ export const generateMemeImage: CreateMemeIdea<GenerateMemeArgs, Meme> = async (
 
     console.log('generated meme url: ', url);
 
-    let memeIdea;
-
-    if (args.id) {
-      memeIdea = await context.entities.Meme.update({
-        where: { id: args.id },
-        data: {
-          templateId: template.id,
-          url: url,
-          text0: args.text0,
-          text1: args.text1,
-          userId: context.user.id,
-          createdAt: new Date(),
-        },
-      });
-    } else {
-      memeIdea = await context.entities.Meme.create({
-        data: {
-          templateId: template.id,
-          url: url,
-          text0: args.text0,
-          text1: args.text1,
-          userId: context.user.id,
-        },
-      });
-    }
-
-    return memeIdea;
+    return url as string;
   } catch (error) {
     console.error(error);
     throw new HttpError(500, 'Error generating meme image');
