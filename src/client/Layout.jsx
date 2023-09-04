@@ -17,13 +17,6 @@ export const Layout = ({ children }) => {
                 <FaRegLaughBeam /> Memerator
               </h1>
             </Link>
-            {/* <sub className='text-xs'>
-              by{' '}
-              <a className='border-b border-primary-300 mb-2' href='https://wasp-lang.dev'>
-                Wasp
-              </a>
-              {' = }'}
-            </sub> */}
           </div>
           {user ? (
             <span>

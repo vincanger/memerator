@@ -7,12 +7,11 @@ import { AiOutlineEdit } from 'react-icons/ai';
 
 export function EditMemePage() {
   // http://localhost:3000/meme-idea/573f283c-24e2-4c45-b6b9-543d0b7cc0c7
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
   const [text0, setText0] = useState('');
   const [text1, setText1] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedMemeIdea, setGeneratedMemeIdea] = useState(null);
 
   const { data: meme, isLoading: isMemeLoading, error: memeError } = useQuery(getMeme, { id: id });
 
@@ -27,8 +26,8 @@ export function EditMemePage() {
     try {
       setIsLoading(true);
       const generatedMeme = await editMeme({ id, text0, text1 });
-      setGeneratedMemeIdea(generatedMeme);
-    } catch (error) {
+
+    } catch (error: any) {
       alert('Error generating meme: ' + error.message);
     } finally {
       setIsLoading(false);

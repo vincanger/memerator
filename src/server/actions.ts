@@ -1,6 +1,6 @@
 import HttpError from '@wasp/core/HttpError.js';
 import OpenAI from 'openai';
-import { fetchMemeTemplates, generateMemeImage } from './utils';
+import { fetchMemeTemplates, generateMemeImage } from './utils.js';
 
 import type { CreateMemeIdea, EditMeme, DeleteMeme } from '@wasp/actions/types';
 import type { Meme, Template } from '@wasp/entities';

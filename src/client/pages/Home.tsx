@@ -23,19 +23,19 @@ export function HomePage() {
     try {
       setIsMemeGenerating(true);
       await createMemeIdea({ topics, audience });
-    } catch (error) {
+    } catch (error: any) {
       alert('Error generating meme: ' + error.message);
     } finally {
       setIsMemeGenerating(false);
     }
   };
 
-  const handleDeleteMeme = async (id) => {
+  const handleDeleteMeme = async (id: string) => {
     const shouldDelete = window.confirm('Are you sure you want to delete this meme?');
     if (!shouldDelete) return;
     try {
       await deleteMeme({ id: id });
-    } catch (error) {
+    } catch (error: any) {
       alert('Error deleting meme: ' + error.message);
     }
   };

@@ -24,7 +24,7 @@ export const getAllMemes: GetAllMemes<GetAllMemesArgs, Meme[]> = async ({ memeId
   return memeIdeas;
 };
 
-export const getMeme: GetMeme<GetMemeArgs, Meme> = async ({ id }, context) => {
+export const getMeme: GetMeme<GetMemeArgs, Meme & { template: Template }> = async ({ id }, context) => {
   if (!context.user) { throw new HttpError(401) }
 
   const meme = await context.entities.Meme.findUnique({

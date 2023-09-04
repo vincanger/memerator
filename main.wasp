@@ -1,6 +1,6 @@
 app Memerator {
   wasp: {
-    version: "^0.11.1"
+    version: "^0.11.3"
   },
   title: "Memerator",
   client: {
@@ -97,13 +97,13 @@ query getMemeTemplates {
 
 route EditMemeRoute { path: "/meme/:id", to: EditMemePage }
 page EditMemePage {
-  component: import { EditMemePage } from "@client/pages/EditMemePage.jsx",
+  component: import { EditMemePage } from "@client/pages/EditMemePage",
   authRequired: true
 }
 
 route HomePageRoute { path: "/", to: HomePage }
 page HomePage {
-  component: import { HomePage } from "@client/pages/Home.jsx",
+  component: import { HomePage } from "@client/pages/Home",
   authRequired: true
 }
 
