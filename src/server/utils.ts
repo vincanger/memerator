@@ -22,8 +22,7 @@ export const fetchMemeTemplates = async () => {
 };
 
 export const generateMemeImage = async (args: GenerateMemeArgs) => {
-
-  console.log('args: ', args); 
+  console.log('args: ', args);
 
   try {
     const data = stringify({

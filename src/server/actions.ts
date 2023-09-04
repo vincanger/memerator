@@ -7,51 +7,69 @@ import type { Meme, Template } from '@wasp/entities';
 
 type CreateMemeArgs = { topics: string[]; audience: string };
 type EditMemeArgs = Pick<Meme, 'id' | 'text0' | 'text1'>;
+type DeleteMemeArgs = Pick<Meme, 'id'>;
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const decrementUserCredits = async (userId: number, context: any) => {
+  const user = await context.entities.User.findUnique({ where: { id: userId } });
+  if (!user) throw new HttpError(404, 'No user with id ' + userId);
+
+  if (user.credits === 0) throw new HttpError(403, 'You have no credits left');
+
+  return await context.entities.User.update({
+    where: { id: userId },
+    data: { credits: user.credits - 1 },
+  });
+};
+
 export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, audience }, context) => {
   if (!context.user) {
-    throw new HttpError(401);
+    throw new HttpError(401, 'You must be logged in');
+  } 
+
+  if (context.user.credits === 0 && !context.user.isAdmin) {
+    throw new HttpError(403, 'You have no credits left');
   }
 
-  try {
-    const topicsStr = topics.join(', ');
+  const topicsStr = topics.join(', ');
 
-    let templates: Template[] = await context.entities.Template.findMany({});
+  let templates: Template[] = await context.entities.Template.findMany({});
 
-    if (templates.length === 0) {
-      const memeTemplates = await fetchMemeTemplates();
-      memeTemplates.forEach(async (template: any) => {
-        const addedTemplate = await context.entities.Template.upsert({
-          where: { id: template.id },
-          create: {
-            id: template.id,
-            name: template.name,
-            url: template.url,
-            width: template.width,
-            height: template.height,
-            boxCount: template.box_count,
-          },
-          update: {},
-        });
-
-        templates.push(addedTemplate);
+  if (templates.length === 0) {
+    const memeTemplates = await fetchMemeTemplates();
+    memeTemplates.forEach(async (template: any) => {
+      const addedTemplate = await context.entities.Template.upsert({
+        where: { id: template.id },
+        create: {
+          id: template.id,
+          name: template.name,
+          url: template.url,
+          width: template.width,
+          height: template.height,
+          boxCount: template.box_count,
+        },
+        update: {},
       });
-    }
 
-    // filter out templates with box_count > 2
-    templates = templates.filter((template) => template.boxCount <= 2);
-    const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+      templates.push(addedTemplate);
+    });
+  }
 
-    console.log('random template: ', randomTemplate);
+  // filter out templates with box_count > 2
+  templates = templates.filter((template) => template.boxCount <= 2);
+  const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
 
-    const sysPrompt = `You are a meme idea generator. You will use the imgflip api to generate a meme based on an idea you suggest. Given a random template name and topics, generate a meme idea for the intended audience. Only use the template provided`;
-    const userPrompt = `Topics: ${topicsStr} \n Intended Audience: ${audience} \n Template: ${randomTemplate.name} \n`;
+  console.log('random template: ', randomTemplate);
 
-    const openAIResponse = await openai.chat.completions.create({
+  const sysPrompt = `You are a meme idea generator. You will use the imgflip api to generate a meme based on an idea you suggest. Given a random template name and topics, generate a meme idea for the intended audience. Only use the template provided`;
+  const userPrompt = `Topics: ${topicsStr} \n Intended Audience: ${audience} \n Template: ${randomTemplate.name} \n`;
+
+  let openAIResponse: OpenAI.Chat.Completions.ChatCompletion;
+  try {
+    openAIResponse = await openai.chat.completions.create({
       messages: [
         { role: 'system', content: sysPrompt },
         { role: 'user', content: userPrompt },
@@ -75,133 +93,111 @@ export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, aud
       },
       model: 'gpt-4-0613',
     });
-
-    console.log(openAIResponse.choices[0]);
-
-    /**
-     * the Function call returned by openAI looks like this:
-     */
-    // {
-    //   index: 0,
-    //   message: {
-    //     role: 'assistant',
-    //     content: null,
-    //     function_call: {
-    //       name: 'generateMeme',
-    //       arguments: '{\n' +
-    //         `  "text0": "CSS you've been writing all day",\n` +
-    //         '  "text1": "This looks horrible"\n' +
-    //         '}'
-    //     }
-    //   },
-    //   finish_reason: 'stop'
-    // }
-    if (!openAIResponse.choices[0].message.function_call) throw new Error('No function call in openAI response');
-
-    const gptArgs = JSON.parse(openAIResponse.choices[0].message.function_call.arguments);
-    console.log('gptArgs: ', gptArgs);
-
-    const memeIdeaText0 = gptArgs.text0;
-    const memeIdeaText1 = gptArgs.text1;
-
-    console.log('meme Idea args: ', memeIdeaText0, memeIdeaText1);
-
-    const memeUrl = await generateMemeImage(
-      {
-        templateId: randomTemplate.id,
-        text0: memeIdeaText0,
-        text1: memeIdeaText1,
-        topics: topicsStr,
-        audience: audience,
-      }
-    );
-
-    const newMeme = await context.entities.Meme.create({
-      data: {
-        text0: memeIdeaText0,
-        text1: memeIdeaText1,
-        topics: topicsStr,
-        audience: audience,
-        url: memeUrl,
-        template: { connect: { id: randomTemplate.id } },
-        user: { connect: { id: context.user.id } },
-      },
-    });
-
-    return newMeme;
-  } catch (error) {
-    console.error(error);
-    throw new HttpError(500, 'Error generating meme idea');
+  } catch (error: any) {
+    console.error('Error calling openAI: ', error);
+    throw new HttpError(500, 'Error calling openAI');
   }
+
+  console.log(openAIResponse.choices[0]);
+
+  /**
+   * the Function call returned by openAI looks like this:
+   */
+  // {
+  //   index: 0,
+  //   message: {
+  //     role: 'assistant',
+  //     content: null,
+  //     function_call: {
+  //       name: 'generateMeme',
+  //       arguments: '{\n' +
+  //         `  "text0": "CSS you've been writing all day",\n` +
+  //         '  "text1": "This looks horrible"\n' +
+  //         '}'
+  //     }
+  //   },
+  //   finish_reason: 'stop'
+  // }
+  if (!openAIResponse.choices[0].message.function_call) throw new HttpError(500, 'No function call in openAI response');
+
+  const gptArgs = JSON.parse(openAIResponse.choices[0].message.function_call.arguments);
+  console.log('gptArgs: ', gptArgs);
+
+  const memeIdeaText0 = gptArgs.text0;
+  const memeIdeaText1 = gptArgs.text1;
+
+  console.log('meme Idea args: ', memeIdeaText0, memeIdeaText1);
+
+  const memeUrl = await generateMemeImage({
+    templateId: randomTemplate.id,
+    text0: memeIdeaText0,
+    text1: memeIdeaText1,
+    topics: topicsStr,
+    audience: audience,
+  });
+
+  const newMeme = await context.entities.Meme.create({
+    data: {
+      text0: memeIdeaText0,
+      text1: memeIdeaText1,
+      topics: topicsStr,
+      audience: audience,
+      url: memeUrl,
+      template: { connect: { id: randomTemplate.id } },
+      user: { connect: { id: context.user.id } },
+    },
+  });
+
+  if (newMeme && !context.user.isAdmin) await decrementUserCredits(context.user.id, context);
+
+  return newMeme;
 };
 
 export const editMeme: EditMeme<EditMemeArgs, Meme> = async ({ id, text0, text1 }, context) => {
   if (!context.user) {
-    throw new HttpError(401);
+    throw new HttpError(401, 'You must be logged in');
   }
 
-  try {
-    const meme = await context.entities.Meme.findUnique({
-      where: { id: id, userId: context.user.id },
-      include: { template: true },
-    });
+  const meme = await context.entities.Meme.findUniqueOrThrow({
+    where: { id: id },
+    include: { template: true },
+  });
 
-    console.log('meme: ', meme);
+  if (!context.user.isAdmin && meme.userId !== context.user.id) {
+    throw new HttpError(403, 'You are not the creator of this meme');
+  }
 
-    if (!meme) {
-      throw new HttpError(404, 'No meme with id ' + id);
-    }
+  const memeUrl = await generateMemeImage({
+    id: id,
+    templateId: meme.template.id,
+    text0: text0,
+    text1: text1,
+  });
 
-    if (meme.userId !== context.user.id) {
-      throw new HttpError(403, 'You are not the creator of this meme');
-    }
-
-    const memeUrl = await generateMemeImage({
-      id: id,
-      templateId: meme.template.id,
+  const newMeme = await context.entities.Meme.update({
+    where: { id: id },
+    data: {
       text0: text0,
       text1: text1,
-    });
+      url: memeUrl,
+    },
+  });
 
-    const newMeme = await context.entities.Meme.update({
-      where: { id: id },
-      data: {
-        text0: text0,
-        text1: text1,
-        url: memeUrl,
-      },
-    });
-
-    return newMeme;
-  } catch (error) {
-    console.error(error);
-    throw new HttpError(500, 'Error editing meme: ' + id);
-  }
+  return newMeme;
 };
-
-type DeleteMemeArgs = Pick<Meme, 'id'>;
 
 export const deleteMeme: DeleteMeme<DeleteMemeArgs, Meme> = async ({ id }, context) => {
   if (!context.user) {
-    throw new HttpError(401);
+    throw new HttpError(401, 'You must be logged in');
   }
 
-  try {
-    const meme = await context.entities.Meme.findUnique({
-      where: { id: id },
-    });
+  const meme = await context.entities.Meme.findUniqueOrThrow({
+    where: { id: id },
+  });
 
-    if (!meme) {
-      throw new HttpError(404, 'No meme with id ' + id);
-    }
-
-    if (meme.userId !== context.user.id) {
-      throw new HttpError(403, 'You are not the creator of this meme');
-    }
-
-    return await context.entities.Meme.delete({ where: { id: id } });
-  } catch (error) {
-    console.error(error);
-    throw new HttpError(500, 'Error deleting meme: ' + id);
+  if (!context.user.isAdmin && meme.userId !== context.user.id) {
+    throw new HttpError(403, 'You are not the creator of this meme');
   }
+
+  return await context.entities.Meme.delete({ where: { id: id } });
 };
