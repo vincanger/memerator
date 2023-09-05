@@ -120,40 +120,42 @@ export function HomePage() {
         </button>
       </form>
 
-      {!!memes
-        ? memes.map((memeIdea) => (
-            <div key={memeIdea.id} className='mt-4 p-4 bg-gray-100 rounded-lg'>
-              <img src={memeIdea.url} width='500px' />
-              <div className='flex flex-col items-start mt-2'>
-                <div>
-                  <span className='text-sm text-gray-700'>Topics: </span>
-                  <span className='text-sm italic text-gray-500'>{memeIdea.topics}</span>
-                </div>
-                <div>
-                  <span className='text-sm text-gray-700'>Audience: </span>
-                  <span className='text-sm italic text-gray-500'>{memeIdea.audience}</span>
-                </div>
+      {!!memes && memes.length > 0 ? (
+        memes.map((memeIdea) => (
+          <div key={memeIdea.id} className='mt-4 p-4 bg-gray-100 rounded-lg'>
+            <img src={memeIdea.url} width='500px' />
+            <div className='flex flex-col items-start mt-2'>
+              <div>
+                <span className='text-sm text-gray-700'>Topics: </span>
+                <span className='text-sm italic text-gray-500'>{memeIdea.topics}</span>
               </div>
-              {user && (user.isAdmin || user.id === memeIdea.userId) && (
-                <div className='flex items-center mt-2'>
-                  <Link key={memeIdea.id} params={{ id: memeIdea.id }} to={`/meme/:id`}>
-                    <button className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'>
-                      <AiOutlineEdit />
-                      Edit Meme
-                    </button>
-                  </Link>
-                  <button
-                    className='flex items-center gap-1 bg-red-500 hover:bg-red-700 border-2 text-white text-xs py-1 px-2 rounded'
-                    onClick={() => handleDeleteMeme(memeIdea.id)}
-                  >
-                    <AiOutlineDelete />
-                    Delete Meme
-                  </button>
-                </div>
-              )}
+              <div>
+                <span className='text-sm text-gray-700'>Audience: </span>
+                <span className='text-sm italic text-gray-500'>{memeIdea.audience}</span>
+              </div>
             </div>
-          ))
-        : 'no memes found'}
+            {user && (user.isAdmin || user.id === memeIdea.userId) && (
+              <div className='flex items-center mt-2'>
+                <Link key={memeIdea.id} params={{ id: memeIdea.id }} to={`/meme/:id`}>
+                  <button className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'>
+                    <AiOutlineEdit />
+                    Edit Meme
+                  </button>
+                </Link>
+                <button
+                  className='flex items-center gap-1 bg-red-500 hover:bg-red-700 border-2 text-white text-xs py-1 px-2 rounded'
+                  onClick={() => handleDeleteMeme(memeIdea.id)}
+                >
+                  <AiOutlineDelete />
+                  Delete Meme
+                </button>
+              </div>
+            )}
+          </div>
+        ))
+      ) : (
+        <div className='flex justify-center mt-5'> :( no memes found</div>
+      )}
     </div>
   );
 }

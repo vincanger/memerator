@@ -11,10 +11,6 @@ export const getAllMemes: GetAllMemes<void, Meme[]> = async (_args, context) => 
     include: { template: true },
   });
 
-  if (memeIdeas.length === 0) {
-    throw new HttpError(404, 'No memes found');
-  }
-
   return memeIdeas;
 };
 
