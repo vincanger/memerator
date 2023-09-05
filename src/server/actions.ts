@@ -1,6 +1,6 @@
 import HttpError from '@wasp/core/HttpError.js';
 import OpenAI from 'openai';
-import { fetchMemeTemplates, generateMemeImage } from './utils.js';
+import { fetchMemeTemplates, generateMemeImage, decrementUserCredits } from './utils.js';
 
 import type { CreateMeme, EditMeme, DeleteMeme } from '@wasp/actions/types';
 import type { Meme, Template } from '@wasp/entities';
@@ -12,18 +12,6 @@ type DeleteMemeArgs = Pick<Meme, 'id'>;
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-const decrementUserCredits = async (userId: number, context: any) => {
-  const user = await context.entities.User.findUnique({ where: { id: userId } });
-  if (!user) throw new HttpError(404, 'No user with id ' + userId);
-
-  if (user.credits === 0) throw new HttpError(403, 'You have no credits left');
-
-  return await context.entities.User.update({
-    where: { id: userId },
-    data: { credits: user.credits - 1 },
-  });
-};
 
 export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, audience }, context) => {
   if (!context.user) {

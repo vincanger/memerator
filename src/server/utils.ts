@@ -50,3 +50,15 @@ export const generateMemeImage = async (args: GenerateMemeArgs) => {
     throw new HttpError(500, 'Error generating meme image');
   }
 };
+
+export const decrementUserCredits = async (userId: number, context: any) => {
+  const user = await context.entities.User.findUnique({ where: { id: userId } });
+  if (!user) throw new HttpError(404, 'No user with id ' + userId);
+
+  if (user.credits === 0) throw new HttpError(403, 'You have no credits left');
+
+  return await context.entities.User.update({
+    where: { id: userId },
+    data: { credits: user.credits - 1 },
+  });
+};

@@ -6,7 +6,6 @@ import type { GetAllMemes, GetMeme, GetMemeTemplates } from '@wasp/queries/types
 type GetAllMemesArgs = { memeIdeaId?: string };
 type GetMemeArgs = { id: string };
 
-
 export const getAllMemes: GetAllMemes<GetAllMemesArgs, Meme[]> = async ({ memeIdeaId }, context) => {
   const memeIdeas = await context.entities.Meme.findMany({
     orderBy: { createdAt: 'desc' },
