@@ -1,14 +1,5 @@
 import { useState, FormEventHandler } from 'react';
-import { Link } from '@wasp/router';
-import { useQuery } from '@wasp/queries';
-import createMeme from '@wasp/actions/createMeme';
-import getAllMemes from '@wasp/queries/getAllMemes';
-import deleteMeme from '@wasp/actions/deleteMeme';
-import useAuth from '@wasp/auth/useAuth';
-import { useHistory } from 'react-router-dom';
 import {
-  AiOutlineEdit,
-  AiOutlineDelete,
   AiOutlinePlusCircle,
   AiOutlineMinusCircle,
   AiOutlineRobot,
@@ -19,42 +10,15 @@ export function HomePage() {
   const [audience, setAudience] = useState('');
   const [isMemeGenerating, setIsMemeGenerating] = useState(false);
 
-  const history = useHistory();
-  const { data: user } = useAuth();
-  const { data: memes, isLoading, error } = useQuery(getAllMemes);
 
   const handleGenerateMeme: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    if (!user) {
-      history.push('/login');
-      return;
-    }
-    if (topics.join('').trim().length === 0 || audience.length === 0) {
-      alert('Please provide topic and audience');
-      return;
-    }
-    try {
-      setIsMemeGenerating(true);
-      await createMeme({ topics, audience });
-    } catch (error: any) {
-      alert('Error generating meme: ' + error.message);
-    } finally {
-      setIsMemeGenerating(false);
-    }
+    //...
   };
 
   const handleDeleteMeme = async (id: string) => {
-    const shouldDelete = window.confirm('Are you sure you want to delete this meme?');
-    if (!shouldDelete) return;
-    try {
-      await deleteMeme({ id: id });
-    } catch (error: any) {
-      alert('Error deleting meme: ' + error.message);
-    }
+    //...
   };
-
-  if (isLoading) return 'Loading...';
-  if (error) return 'Error: ' + error;
 
   return (
     <div className='p-4'>
@@ -119,41 +83,9 @@ export function HomePage() {
           {!isMemeGenerating ? 'Generate Meme' : 'Generating...'}
         </button>
       </form>
-
-      {!!memes
-        ? memes.map((memeIdea) => (
-            <div key={memeIdea.id} className='mt-4 p-4 bg-gray-100 rounded-lg'>
-              <img src={memeIdea.url} width='500px' />
-              <div className='flex flex-col items-start mt-2'>
-                <div>
-                  <span className='text-sm text-gray-700'>Topics: </span>
-                  <span className='text-sm italic text-gray-500'>{memeIdea.topics}</span>
-                </div>
-                <div>
-                  <span className='text-sm text-gray-700'>Audience: </span>
-                  <span className='text-sm italic text-gray-500'>{memeIdea.audience}</span>
-                </div>
-              </div>
-              {user && (user.isAdmin || user.id === memeIdea.userId) && (
-                <div className='flex items-center mt-2'>
-                  <Link key={memeIdea.id} params={{ id: memeIdea.id }} to={`/meme/:id`}>
-                    <button className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'>
-                      <AiOutlineEdit />
-                      Edit Meme
-                    </button>
-                  </Link>
-                  <button
-                    className='flex items-center gap-1 bg-red-500 hover:bg-red-700 border-2 text-white text-xs py-1 px-2 rounded'
-                    onClick={() => handleDeleteMeme(memeIdea.id)}
-                  >
-                    <AiOutlineDelete />
-                    Delete Meme
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
-        : 'no memes found'}
+      {/* 
+       * TODO: This is where you will display the memes that the user has generated.
+       */}
     </div>
   );
 }
