@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { AiOutlineEdit } from 'react-icons/ai';
 
 export function EditMemePage() {
-  // http://localhost:3000/meme-idea/573f283c-24e2-4c45-b6b9-543d0b7cc0c7
+  // http://localhost:3000/meme/573f283c-24e2-4c45-b6b9-543d0b7cc0c7
   const { id } = useParams<{ id: string }>();
 
   const [text0, setText0] = useState('');

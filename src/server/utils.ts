@@ -5,10 +5,7 @@ import HttpError from '@wasp/core/HttpError.js';
 type GenerateMemeArgs = {
   text0: string;
   text1: string;
-  topics?: string;
-  id?: string;
-  templateId?: string;
-  audience?: string;
+  templateId: string;
 };
 
 export const fetchMemeTemplates = async () => {
