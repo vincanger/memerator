@@ -3,10 +3,9 @@ import HttpError from '@wasp/core/HttpError.js';
 import type { Meme, Template } from '@wasp/entities';
 import type { GetAllMemes, GetMeme, GetMemeTemplates } from '@wasp/queries/types';
 
-type GetAllMemesArgs = { memeIdeaId?: string };
 type GetMemeArgs = { id: string };
 
-export const getAllMemes: GetAllMemes<GetAllMemesArgs, Meme[]> = async ({ memeIdeaId }, context) => {
+export const getAllMemes: GetAllMemes<void, Meme[]> = async (_args, context) => {
   const memeIdeas = await context.entities.Meme.findMany({
     orderBy: { createdAt: 'desc' },
     include: { template: true },
