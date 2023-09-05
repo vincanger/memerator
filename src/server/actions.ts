@@ -120,8 +120,6 @@ export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, aud
     templateId: randomTemplate.id,
     text0: memeIdeaText0,
     text1: memeIdeaText1,
-    topics: topicsStr,
-    audience: audience,
   });
 
   const newMeme = await context.entities.Meme.create({
@@ -156,7 +154,6 @@ export const editMeme: EditMeme<EditMemeArgs, Meme> = async ({ id, text0, text1 
   }
 
   const memeUrl = await generateMemeImage({
-    id: id,
     templateId: meme.template.id,
     text0: text0,
     text1: text1,
