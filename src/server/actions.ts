@@ -132,7 +132,7 @@ export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, aud
       audience: audience,
       url: memeUrl,
       templateId: randomTemplate.id,
-      userId: context?.user?.id
+      userId: context?.user?.id || 1,
     },
   });
 

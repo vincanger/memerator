@@ -57,14 +57,32 @@ export function HomePage() {
   if (error) return 'Error: ' + error;
 
   return (
-    <div className='p-4'>
+    <div className='p-4 flex flex-col items-center'>
       <h1 className='text-3xl font-bold mb-4'>Welcome to Memerator!</h1>
-      <p className='mb-4'>Start generating meme ideas by providing topics and intended audience.</p>
+      <p className='mb-4'>Generate memes instantly. Log in to be able to edit memes!</p>
       <form onSubmit={handleGenerateMeme}>
-        <div className='mb-4 max-w-[500px]'>
-          <label htmlFor='topics' className='block font-bold mb-2'>
-            Topics:
-          </label>
+        <div className='flex flex-col mb-4 max-w-[500px]'>
+          <div className='flex justify-start items-center gap-2 mb-1'>
+            <label htmlFor='topics' className='block font-bold mb-2'>
+              Topics:
+            </label>
+            <button
+              type='button'
+              onClick={() => topics.length < 3 && setTopics([...topics, ''])}
+              className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'
+            >
+              <AiOutlinePlusCircle /> Add Topic
+            </button>
+
+              <button
+                type='button'
+                onClick={() => setTopics(topics.slice(0, -1))}
+                className={`flex items-center gap-1 bg-red-500 hover:bg-red-700 border-2 text-white text-xs py-1 px-2 rounded ${topics.length > 1 ? '' : 'invisible'}`}
+              >
+                <AiOutlineMinusCircle /> Remove Topic
+              </button>
+
+          </div>
           {topics.map((topic, index) => (
             <input
               key={index}
@@ -79,23 +97,6 @@ export function HomePage() {
               className='p-1 mr-1 mb-1 border rounded text-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent'
             />
           ))}
-          <div className='flex items-center my-2 gap-1'>
-            <button
-              type='button'
-              onClick={() => topics.length < 3 && setTopics([...topics, ''])}
-              className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'
-            >
-              <AiOutlinePlusCircle /> Add Topic
-            </button>
-            {topics.length > 1 && (
-              <button
-                onClick={() => setTopics(topics.slice(0, -1))}
-                className='flex items-center gap-1 bg-red-500 hover:bg-red-700 border-2 text-white text-xs py-1 px-2 rounded'
-              >
-                <AiOutlineMinusCircle /> Remove Topic
-              </button>
-            )}
-          </div>
         </div>
         <div className='mb-4'>
           <label htmlFor='audience' className='block font-bold mb-2'>
@@ -106,7 +107,7 @@ export function HomePage() {
             id='audience'
             value={audience}
             onChange={(e) => setAudience(e.target.value)}
-            className='p-1 border rounded text-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent'
+            className='p-1 min-w-[100%] border rounded text-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent'
           />
         </div>
         <button
@@ -120,42 +121,46 @@ export function HomePage() {
         </button>
       </form>
 
-      {!!memes && memes.length > 0 ? (
-        memes.map((memeIdea) => (
-          <div key={memeIdea.id} className='mt-4 p-4 bg-gray-100 rounded-lg'>
-            <img src={memeIdea.url} width='500px' />
-            <div className='flex flex-col items-start mt-2'>
+      <div className=' grid grid-cols-1 lg:grid-cols-3'>
+        {!!memes && memes.length > 0 ? (
+          memes.map((memeIdea) => (
+            <div key={memeIdea.id} className='flex flex-col justify-between mt-4 p-4 bg-gray-100 rounded-lg'>
+              <img src={memeIdea.url} width='400px' />
               <div>
-                <span className='text-sm text-gray-700'>Topics: </span>
-                <span className='text-sm italic text-gray-500'>{memeIdea.topics}</span>
+              <div className='flex flex-col items-start mt-2'>
+                <div>
+                  <span className='text-sm text-gray-700'>Topics: </span>
+                  <span className='text-sm italic text-gray-500'>{memeIdea.topics}</span>
+                </div>
+                <div>
+                  <span className='text-sm text-gray-700'>Audience: </span>
+                  <span className='text-sm italic text-gray-500'>{memeIdea.audience}</span>
+                </div>
               </div>
-              <div>
-                <span className='text-sm text-gray-700'>Audience: </span>
-                <span className='text-sm italic text-gray-500'>{memeIdea.audience}</span>
+              {user && (user.isAdmin || user.id === memeIdea.userId) && (
+                <div className='flex items-center mt-2'>
+                  <Link key={memeIdea.id} params={{ id: memeIdea.id }} to={`/meme/:id`}>
+                    <button className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'>
+                      <AiOutlineEdit />
+                      Edit Meme
+                    </button>
+                  </Link>
+                  <button
+                    className='flex items-center gap-1 bg-red-500 hover:bg-red-700 border-2 text-white text-xs py-1 px-2 rounded'
+                    onClick={() => handleDeleteMeme(memeIdea.id)}
+                  >
+                    <AiOutlineDelete />
+                    Delete Meme
+                  </button>
+                </div>
+              )}
               </div>
             </div>
-            {user && (user.isAdmin || user.id === memeIdea.userId) && (
-              <div className='flex items-center mt-2'>
-                <Link key={memeIdea.id} params={{ id: memeIdea.id }} to={`/meme/:id`}>
-                  <button className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'>
-                    <AiOutlineEdit />
-                    Edit Meme
-                  </button>
-                </Link>
-                <button
-                  className='flex items-center gap-1 bg-red-500 hover:bg-red-700 border-2 text-white text-xs py-1 px-2 rounded'
-                  onClick={() => handleDeleteMeme(memeIdea.id)}
-                >
-                  <AiOutlineDelete />
-                  Delete Meme
-                </button>
-              </div>
-            )}
-          </div>
-        ))
-      ) : (
-        <div className='flex justify-center mt-5'> :( no memes found</div>
-      )}
+          ))
+        ) : (
+          <div className='flex justify-center mt-5'> :( no memes found</div>
+        )}
+      </div>
     </div>
   );
 }
