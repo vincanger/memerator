@@ -26,24 +26,26 @@ export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, aud
 
   let templates: Template[] = await context.entities.Template.findMany({});
 
-  if (templates.length === 0) {
+	if (templates.length === 0) {
     const memeTemplates = await fetchMemeTemplates();
-    memeTemplates.forEach(async (template: any) => {
-      const addedTemplate = await context.entities.Template.upsert({
-        where: { id: template.id },
-        create: {
-          id: template.id,
-          name: template.name,
-          url: template.url,
-          width: template.width,
-          height: template.height,
-          boxCount: template.box_count,
-        },
-        update: {},
-      });
+    templates = await Promise.all(
+      memeTemplates.map(async (template: any) => {
+        const addedTemplate = await context.entities.Template.upsert({
+          where: { id: template.id },
+          create: {
+            id: template.id,
+            name: template.name,
+            url: template.url,
+            width: template.width,
+            height: template.height,
+            boxCount: template.box_count,
+          },
+          update: {},
+        });
 
-      templates.push(addedTemplate);
-    });
+        return addedTemplate;
+      })
+    );
   }
 
   // filter out templates with box_count > 2
