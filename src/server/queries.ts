@@ -16,7 +16,7 @@ export const getAllMemes: GetAllMemes<void, Meme[]> = async (_args, context) => 
 
 export const getMeme: GetMeme<GetMemeArgs, Meme & { template: Template }> = async ({ id }, context) => {
   if (!context.user) {
-    throw new HttpError(401);
+    throw new HttpError(401, 'You are not logged in');
   }
 
   const meme = await context.entities.Meme.findUniqueOrThrow({
@@ -29,7 +29,7 @@ export const getMeme: GetMeme<GetMemeArgs, Meme & { template: Template }> = asyn
 
 export const getMemeTemplates: GetMemeTemplates<void, Template[]> = async (_arg, context) => {
   if (!context.user) {
-    throw new HttpError(401);
+    throw new HttpError(401, 'You are not logged in');
   }
 
   const memeTemplates = await context.entities.Template.findMany({});

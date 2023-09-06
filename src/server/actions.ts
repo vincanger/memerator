@@ -14,13 +14,13 @@ const openai = new OpenAI({
 });
 
 export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, audience }, context) => {
-  if (!context.user) {
-    throw new HttpError(401, 'You must be logged in');
-  } 
+  // if (!context.user) {
+  //   throw new HttpError(401, 'You must be logged in');
+  // } 
 
-  if (context.user.credits === 0 && !context.user.isAdmin) {
-    throw new HttpError(403, 'You have no credits left');
-  }
+  // if (context.user.credits === 0 && !context.user.isAdmin) {
+  //   throw new HttpError(403, 'You have no credits left');
+  // }
 
   const topicsStr = topics.join(', ');
 
@@ -131,12 +131,12 @@ export const createMeme: CreateMeme<CreateMemeArgs, Meme> = async ({ topics, aud
       topics: topicsStr,
       audience: audience,
       url: memeUrl,
-      template: { connect: { id: randomTemplate.id } },
-      user: { connect: { id: context.user.id } },
+      templateId: randomTemplate.id,
+      userId: context?.user?.id
     },
   });
 
-  if (newMeme && !context.user.isAdmin) await decrementUserCredits(context.user.id, context);
+  // if (newMeme && !context.user.isAdmin) await decrementUserCredits(context.user.id, context);
 
   return newMeme;
 };

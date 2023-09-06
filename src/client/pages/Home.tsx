@@ -25,10 +25,10 @@ export function HomePage() {
 
   const handleGenerateMeme: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    if (!user) {
-      history.push('/login');
-      return;
-    }
+    // if (!user) {
+    //   history.push('/login');
+    //   return;
+    // }
     if (topics.join('').trim().length === 0 || audience.length === 0) {
       alert('Please provide topic and audience');
       return;
