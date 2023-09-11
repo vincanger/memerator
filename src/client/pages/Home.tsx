@@ -1,10 +1,8 @@
-import { useState, useEffect, FormEventHandler } from 'react';
+import { useState, FormEventHandler } from 'react';
 import { Link } from '@wasp/router';
 import { useQuery } from '@wasp/queries';
 import createMeme from '@wasp/actions/createMeme';
-// import getAllMemes from '@wasp/queries/getAllMemes';
-import getMemeCount from '@wasp/queries/getMemeCount';
-import getPaginatedMemes from '@wasp/queries/getPaginatedMemes';
+import getAllMemes from '@wasp/queries/getAllMemes';
 import deleteMeme from '@wasp/actions/deleteMeme';
 import useAuth from '@wasp/auth/useAuth';
 import { useHistory } from 'react-router-dom';
@@ -21,32 +19,18 @@ export function HomePage() {
   const [topics, setTopics] = useState(['']);
   const [audience, setAudience] = useState('');
   const [isMemeGenerating, setIsMemeGenerating] = useState(false);
-  const [ after, setAfter ] = useState(0);
-  const [ pages, setPages ] = useState<number[]>([]);
 
   const history = useHistory();
   const { data: user } = useAuth();
-  // const { data: memes, isLoading, error } = useQuery(getAllMemes);
-  const { data: memeCount } = useQuery(getMemeCount);
-  const { data: memes, isLoading, error } = useQuery(getPaginatedMemes, { first: 20, after: after});
+  const { data: memes, isLoading, error } = useQuery(getAllMemes);
 
-  useEffect(() => {
-    if(memeCount) {
-      const numPages = Math.ceil(memeCount / 20);
-      const pageNumbers = Array.from(Array(numPages).keys());
-      setPages(pageNumbers);
-      console.log(pageNumbers)
-      console.log(after)
-    }
-
-  }, [memeCount]);
 
   const handleGenerateMeme: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    // if (!user) {
-    //   history.push('/login');
-    //   return;
-    // }
+    if (!user) {
+      history.push('/login');
+      return;
+    }
     if (topics.join('').trim().length === 0 || audience.length === 0) {
       alert('Please provide topic and audience');
       return;
@@ -76,7 +60,7 @@ export function HomePage() {
   return (
     <div className='p-4 flex flex-col items-center'>
       <h1 className='text-3xl font-bold mb-4'>Welcome to Memerator!</h1>
-      <p className='mb-4'>Generate memes instantly. Log in to be able to edit memes!</p>
+      <p className='mb-4'>Generate memes instantly with GPT. Edit them to make them your own!</p>
       <form onSubmit={handleGenerateMeme}>
         <div className='flex flex-col mb-4 max-w-[500px]'>
           <div className='flex justify-start items-center gap-2 mb-1'>
@@ -138,51 +122,6 @@ export function HomePage() {
           {!isMemeGenerating ? 'Generate Meme' : 'Generating...'}
         </button>
       </form>
-      {/* create a pages component to select through paginated results */}
-      <div className='flex justify-center mt-5'>
-        {/* "First" page button */}
-        <button
-          className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'
-          onClick={() => setAfter(0)}
-        >
-          First Page
-        </button>
-
-        {/* "Prev" page button */}
-        <button
-          className={`flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded ${
-            after === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          }`}
-          onClick={() => setAfter(after - 20)}
-          disabled={after === 0} // disable if this is the first page
-        >
-          {'<'}
-        </button>
-
-        {/* Show current page */}
-        <button className='flex items-center gap-1 bg-gray-200  border-2 text-black text-xs py-1 px-2 rounded' disabled>
-          {after / 20 + 1}
-        </button>
-
-        {/* "Next" page button */}
-        <button
-          className={`flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded ${
-            after / 20 === pages.length - 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          }`}
-          onClick={() => setAfter(after + 20)}
-          disabled={after / 20 === pages.length - 1} // disable if this is the last page
-        >
-          {'>'}
-        </button>
-
-        {/* "Last" page button */}
-        <button
-          className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'
-          onClick={() => setAfter((pages.length - 1) * 20)}
-        >
-          Last Page
-        </button>
-      </div>
       {!isLoading ? (
         <div>
           <div className=' grid grid-cols-1 lg:grid-cols-3'>

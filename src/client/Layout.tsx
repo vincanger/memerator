@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '@wasp/auth/useAuth';
 import logout from '@wasp/auth/logout';
-import { FaRegLaughBeam, FaTwitterSquare } from 'react-icons/fa';
+import { FaRegLaughBeam } from 'react-icons/fa';
 import './Main.css';
 
 export const Layout = ({ children }: { children: ReactNode }) => {
@@ -24,14 +24,6 @@ export const Layout = ({ children }: { children: ReactNode }) => {
               </a>
               <span className='font-bold'>{' = }'}</span>
             </sub>
-          </div>
-          <div className='absolute inset-x-0'>
-            <a href='https://x.com/hot_town' target='_blank'>
-              <div className='flex justify-center items-center gap-2'>
-                <FaTwitterSquare />
-                <span >@hot_town</span>
-              </div>
-            </a>
           </div>
           {user ? (
             <span>
