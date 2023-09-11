@@ -75,8 +75,18 @@ action deleteMeme {
   entities: [Meme]
 }
 
+query getMemeCount {
+  fn: import { getMemeCount } from "@server/queries.js",
+  entities: [Meme]
+}
+
 query getAllMemes {
   fn: import { getAllMemes } from "@server/queries.js",
+  entities: [Meme]
+}
+
+query getPaginatedMemes {
+  fn: import { getPaginatedMemes } from "@server/queries.js",
   entities: [Meme]
 }
 

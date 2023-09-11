@@ -5,7 +5,7 @@ export const fetchAndStoreMemeTemplates = async (_args: any, context: any) => {
 
   try {
     const response = await axios.get('https://api.imgflip.com/get_memes');
-
+  
     const promises = response.data.data.memes.map((meme: any) => {
       return context.entities.Template.upsert({
         where: { id: meme.id },
@@ -20,9 +20,9 @@ export const fetchAndStoreMemeTemplates = async (_args: any, context: any) => {
         update: {},
       });
     });
-
+  
     await Promise.all(promises);
   } catch (error) {
-    console.error('error fetching meme templates: ', error);
+    console.error('error fetching meme templates: ', error)
   }
 };
