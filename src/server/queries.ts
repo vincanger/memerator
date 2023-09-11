@@ -1,8 +1,9 @@
 import HttpError from '@wasp/core/HttpError.js';
 
 import type { Meme, Template } from '@wasp/entities';
-import type { GetAllMemes, GetMeme, GetMemeTemplates } from '@wasp/queries/types';
+import type { GetAllMemes, GetPaginatedMemes, GetMeme, GetMemeTemplates } from '@wasp/queries/types';
 
+type GetPaginatedMemesArgs = { first: number, after: number };
 type GetMemeArgs = { id: string };
 
 export const getAllMemes: GetAllMemes<void, Meme[]> = async (_args, context) => {
@@ -13,6 +14,17 @@ export const getAllMemes: GetAllMemes<void, Meme[]> = async (_args, context) => 
 
   return memeIdeas;
 };
+
+export const getPaginatedMemes: GetPaginatedMemes<GetPaginatedMemesArgs, Meme[]> = async ({ first, after }, context) => {
+  const memes = await context.entities.Meme.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: { template: true },
+    skip: after,
+    take: first,
+  });
+
+  return memes;
+}
 
 export const getMeme: GetMeme<GetMemeArgs, Meme & { template: Template }> = async ({ id }, context) => {
   if (!context.user) {
@@ -40,3 +52,13 @@ export const getMemeTemplates: GetMemeTemplates<void, Template[]> = async (_arg,
 
   return memeTemplates;
 };
+
+import { GetMemeCount } from '@wasp/queries/types'
+
+
+
+export const getMemeCount: GetMemeCount<void, number> = async (args, context) => {
+  const count = await context.entities.Meme.count({})
+
+  return count
+}

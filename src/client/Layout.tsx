@@ -1,9 +1,9 @@
-import { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import useAuth from '@wasp/auth/useAuth';
 import logout from '@wasp/auth/logout';
-import { FaRegLaughBeam } from 'react-icons/fa';
-import "./Main.css";
+import { FaRegLaughBeam, FaTwitterSquare } from 'react-icons/fa';
+import './Main.css';
 
 export const Layout = ({ children }: { children: ReactNode }) => {
   const { data: user } = useAuth();
@@ -18,6 +18,20 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                 <FaRegLaughBeam /> Memerator
               </h1>
             </Link>
+            <sub className='text-[0.7rem]'>
+              <a href='https://wasp-lang.dev' className='underline'>
+                made with Wasp
+              </a>
+              <span className='font-bold'>{' = }'}</span>
+            </sub>
+          </div>
+          <div className='absolute inset-x-0'>
+            <a href='https://x.com/hot_town' target='_blank'>
+              <div className='flex justify-center items-center gap-2'>
+                <FaTwitterSquare />
+                <span >@hot_town</span>
+              </div>
+            </a>
           </div>
           {user ? (
             <span>
