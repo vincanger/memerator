@@ -11,11 +11,12 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className='flex flex-col min-h-screen'>
       <header className='bg-black text-primary-300 p-4'>
-        <div className='container mx-auto px-4 py-2 flex justify-between '>
+        <div className='container mx-auto px-4 py-2 flex justify-between'>
           <div className='flex items-center gap-2'>
             <Link to='/'>
               <h1 className='flex items-center gap-2 text-xl2 font-semibold'>
-                <FaRegLaughBeam /> Memerator
+                <FaRegLaughBeam />
+                <span className='hidden sm:block'>Memerator</span>
               </h1>
             </Link>
             <sub className='text-[0.7rem]'>
@@ -25,14 +26,16 @@ export const Layout = ({ children }: { children: ReactNode }) => {
               <span className='font-bold'>{' = }'}</span>
             </sub>
           </div>
-          <div className='absolute inset-x-0'>
-            <a href='https://x.com/hot_town' target='_blank'>
-              <div className='flex justify-center items-center gap-2'>
+
+          <div className='absolute left-1/2 transform -translate-x-1/2 hidden sm:block'>
+            <div>
+              <a href='https://x.com/hot_town' target='_blank' className='flex justify-center items-center gap-2'>
                 <FaTwitterSquare />
-                <span >@hot_town</span>
-              </div>
-            </a>
+                <span>@hot_town</span>
+              </a>
+            </div>
           </div>
+
           {user ? (
             <span>
               Hi, {user.username}!{' '}
