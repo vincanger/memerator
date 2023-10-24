@@ -203,7 +203,7 @@ export function HomePage() {
                     </div>
                     {user && (user.isAdmin || user.id === memeIdea.userId) && (
                       <div className='flex items-center mt-2'>
-                        <Link key={memeIdea.id} params={{ id: memeIdea.id }} to={`/meme/:id`}>
+                        <Link key={memeIdea.id} params={{ id: memeIdea.id }} to={'/meme/:id'}>
                           <button className='flex items-center gap-1 bg-primary-200 hover:bg-primary-300 border-2 text-black text-xs py-1 px-2 rounded'>
                             <AiOutlineEdit />
                             Edit Meme
