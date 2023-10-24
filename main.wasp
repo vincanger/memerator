@@ -104,9 +104,9 @@ page SignupPage {
   component: import Signup from "@client/pages/auth/Signup"
 }
 
-route MemeRoute { path: "/meme/:id", to: MemePage }
-page MemePage {
-  component: import MemePage from "@client/pages/MemePage",
+route EditMemeRoute { path: "/meme/:id", to: EditMemePage }
+page EditMemePage {
+  component: import { EditMemePage } from "@client/pages/EditMemePage",
 }
 
 job deleteOldMemes {

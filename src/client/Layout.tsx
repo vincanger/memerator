@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '@wasp/auth/useAuth';
 import logout from '@wasp/auth/logout';
-import { FaRegLaughBeam } from 'react-icons/fa';
+import { FaRegLaughBeam, FaTwitterSquare } from 'react-icons/fa';
 import './Main.css';
 
 export const Layout = ({ children }: { children: ReactNode }) => {
