@@ -1,8 +1,9 @@
+import type { StoreMemeTemplates } from '@wasp/jobs/storeMemeTemplates'
+import type { Template } from '@wasp/entities'
 import axios from 'axios';
 
-export const fetchAndStoreMemeTemplates = async (_args: any, context: any) => {
-  console.log('.... ><><>< get meme templates cron starting ><><>< ....');
 
+export const fetchAndStoreMemeTemplates: StoreMemeTemplates<never, void> = async (_args, context) => {
   try {
     const response = await axios.get('https://api.imgflip.com/get_memes');
   
@@ -19,9 +20,10 @@ export const fetchAndStoreMemeTemplates = async (_args: any, context: any) => {
         },
         update: {},
       });
-    });
+    }) as Promise<Template>[];
   
-    await Promise.all(promises);
+    await Promise.all(promises)
+
   } catch (error) {
     console.error('error fetching meme templates: ', error)
   }
